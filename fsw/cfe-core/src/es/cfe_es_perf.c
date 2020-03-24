@@ -419,7 +419,7 @@ void CFE_ES_PerfLogAdd(uint32 Marker, uint32 EntryExit)
     if (Perf->MetaData.State != CFE_ES_PERF_IDLE) {
 
         /* if marker is out of range... */
-        if(Marker >= CFE_MISSION_ES_PERF_MAX_IDS){
+        if(Marker >= CFE_MISSION_ES_PERF_MAX_IDS) {
 
           /* if marker has not been reported previously ... */
           if(Perf->MetaData.InvalidMarkerReported == false){
@@ -429,9 +429,14 @@ void CFE_ES_PerfLogAdd(uint32 Marker, uint32 EntryExit)
           }/* end if */
 
           return;
-
         }/* end if */
 
+        /* if EntryExit is out of range... */
+        if(EntryExit > 1) {
+            CFE_ES_WriteToSysLog("ES PERF:Invalid EntryExit value: %u\n",
+                    (unsigned int)EntryExit);
+          return;
+        }/* end if */
 
         /* is this id filtered */
         if (CFE_ES_TEST_LONG_MASK(Perf->MetaData.FilterMask, Marker)) {

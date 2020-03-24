@@ -1127,35 +1127,44 @@ int32 CFE_TBL_GetAddresses( void **TblPtrs[],
     int32   Status;
     uint32  ThisAppId;
 
-    /* Assume failure at returning the table addresses */
-    for (i=0; i<NumTables; i++)
+    if (NumTables < CFE_PLATFORM_TBL_MAX_NUM_TABLES)
     {
-        *TblPtrs[i] = NULL;
-    }
 
-    /* Validate the calling application's AppID */
-    Status = CFE_TBL_ValidateAppID(&ThisAppId);
+       /* Assume failure at returning the table addresses */
+       for (i=0; i<NumTables; i++)
+       {
+           *TblPtrs[i] = NULL;
+       }
 
-    if (Status == CFE_SUCCESS)
-    {
-        for (i=0; i<NumTables; i++)
-        {
-            /* Continue to get the return status until one returns something other than CFE_SUCCESS */
-            if (Status == CFE_SUCCESS)
-            {
-                Status = CFE_TBL_GetAddressInternal(TblPtrs[i], TblHandles[i], ThisAppId);
-            }
-            else
-            {
-                /* Don't bother getting the status of other tables once one has returned */
-                /* a non CFE_SUCCESS value.                                              */
-                CFE_TBL_GetAddressInternal(TblPtrs[i], TblHandles[i], ThisAppId);
-            }
-        }
-    }
+       /* Validate the calling application's AppID */
+       Status = CFE_TBL_ValidateAppID(&ThisAppId);
+
+       if (Status == CFE_SUCCESS)
+       {
+           for (i=0; i<NumTables; i++)
+           {
+               /* Continue to get the return status until one returns something other than CFE_SUCCESS */
+               if (Status == CFE_SUCCESS)
+               {
+                  Status = CFE_TBL_GetAddressInternal(TblPtrs[i], TblHandles[i], ThisAppId);
+               }
+               else
+               {
+                   /* Don't bother getting the status of other tables once one has returned */
+                   /* a non CFE_SUCCESS value.                                              */
+                   CFE_TBL_GetAddressInternal(TblPtrs[i], TblHandles[i], ThisAppId);
+               }
+           }
+       }
+       else
+       {
+          CFE_ES_WriteToSysLog("CFE_TBL:GetAddresses-Bad AppId=%d\n", (int)ThisAppId);
+       }
+    }   
     else
     {
-        CFE_ES_WriteToSysLog("CFE_TBL:GetAddresses-Bad AppId=%d\n", (int)ThisAppId);
+        CFE_ES_WriteToSysLog("CFE_TBL:GetAddresses-Invalid NumTables=%u\n", (unsigned int)NumTables); 
+        Status = CFE_TBL_BAD_ARGUMENT;
     }
 
     return Status;
@@ -1175,19 +1184,27 @@ int32 CFE_TBL_ReleaseAddresses( uint16 NumTables,
     int32   Status = CFE_SUCCESS;
     uint16  i;
 
-    for (i=0; i<NumTables; i++)
+    if (NumTables < CFE_PLATFORM_TBL_MAX_NUM_TABLES)
     {
-        /* Continue to get the return status until one returns something other than CFE_SUCCESS */
-        if (Status == CFE_SUCCESS)
-        {
-            Status = CFE_TBL_ReleaseAddress(TblHandles[i]);
-        }
-        else
-        {
-            /* Don't bother getting the status of other tables once one has returned */
-            /* a non CFE_SUCCESS value.                                              */
-            CFE_TBL_ReleaseAddress(TblHandles[i]);
-        }
+       for (i=0; i<NumTables; i++)
+       {
+           /* Continue to get the return status until one returns something other than CFE_SUCCESS */
+           if (Status == CFE_SUCCESS)
+           {
+               Status = CFE_TBL_ReleaseAddress(TblHandles[i]);
+           }
+           else
+           {
+               /* Don't bother getting the status of other tables once one has returned */
+               /* a non CFE_SUCCESS value.                                              */
+               CFE_TBL_ReleaseAddress(TblHandles[i]);
+           }
+       }
+    }   
+    else
+    {
+        CFE_ES_WriteToSysLog("CFE_TBL:CFE_TBL_ReleaseAddresses-Invalid NumTables=%u\n", (unsigned int)NumTables); 
+        Status = CFE_TBL_BAD_ARGUMENT;
     }
 
     return Status;

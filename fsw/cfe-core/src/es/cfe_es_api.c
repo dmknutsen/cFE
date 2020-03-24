@@ -211,7 +211,7 @@ void CFE_ES_SetAppState(uint32 AppID, uint32 TargetState)
     }
 
     AppState->AppState = TargetState;
-}
+} /* End of CFE_ES_SetAppState() */
 
 /*
 ** Function: CFE_ES_RestartApp
@@ -278,48 +278,58 @@ int32 CFE_ES_ReloadApp(uint32 AppID, const char *AppFileName)
     int32 ReturnCode = CFE_SUCCESS;
     os_fstat_t FileStatus;
 
-    CFE_ES_LockSharedData(__func__,__LINE__);
+    if ( AppID < CFE_PLATFORM_ES_MAX_APPLICATIONS )
+    {
+
+       CFE_ES_LockSharedData(__func__,__LINE__);
     
-    /*
-    ** Check to see if the App is an external cFE App.
-    */
-    if ( CFE_ES_Global.AppTable[AppID].Type == CFE_ES_AppType_CORE )
-    {
-       CFE_ES_SysLogWrite_Unsync ("CFE_ES_DeleteApp: Cannot Reload a CORE Application: %s.\n", 
-       CFE_ES_Global.AppTable[AppID].StartParams.Name );
-       ReturnCode = CFE_ES_ERR_APPID; 
-    }
-    else if ( CFE_ES_Global.AppTable[AppID].AppState != CFE_ES_AppState_RUNNING )
-    {
-       CFE_ES_SysLogWrite_Unsync ("CFE_ES_ReloadApp: Cannot Reload Application %s, It is not running.\n",
-                              CFE_ES_Global.AppTable[AppID].StartParams.Name);
-       ReturnCode = CFE_ES_ERR_APPID; 
-    }    
-    else
-    {
        /*
-       ** Check to see if the file exists
+       ** Check to see if the App is an external cFE App.
        */
-       if (OS_stat(AppFileName, &FileStatus) == OS_SUCCESS)
+       if ( CFE_ES_Global.AppTable[AppID].Type == CFE_ES_AppType_CORE )
        {
-           CFE_ES_SysLogWrite_Unsync("CFE_ES_ReloadApp: Reload Application %s Initiated. New filename = %s\n", 
-                                CFE_ES_Global.AppTable[AppID].StartParams.Name, AppFileName);
-           strncpy((char *)CFE_ES_Global.AppTable[AppID].StartParams.FileName, AppFileName, OS_MAX_PATH_LEN);
-           CFE_ES_Global.AppTable[AppID].ControlReq.AppControlRequest = CFE_ES_RunStatus_SYS_RELOAD;
-           CFE_ES_SetAppState(AppID, CFE_ES_AppState_WAITING);
-           CFE_ES_Global.AppTable[AppID].ControlReq.AppTimer = CFE_PLATFORM_ES_APP_KILL_TIMEOUT;
+          CFE_ES_SysLogWrite_Unsync ("CFE_ES_DeleteApp: Cannot Reload a CORE Application: %s.\n", 
+          CFE_ES_Global.AppTable[AppID].StartParams.Name );
+          ReturnCode = CFE_ES_ERR_APPID; 
        }
+       else if ( CFE_ES_Global.AppTable[AppID].AppState != CFE_ES_AppState_RUNNING )
+       {
+          CFE_ES_SysLogWrite_Unsync ("CFE_ES_ReloadApp: Cannot Reload Application %s, It is not running.\n",
+                                 CFE_ES_Global.AppTable[AppID].StartParams.Name);
+          ReturnCode = CFE_ES_ERR_APPID; 
+       }    
        else
        {
-           CFE_ES_SysLogWrite_Unsync ("CFE_ES_ReloadApp: Cannot Reload Application %s, File %s does not exist.\n",
-                                  CFE_ES_Global.AppTable[AppID].StartParams.Name,
-                                  AppFileName);
-           ReturnCode = CFE_ES_FILE_IO_ERR;
+          /*
+          ** Check to see if the file exists
+          */
+          if (OS_stat(AppFileName, &FileStatus) == OS_SUCCESS)
+          {
+              CFE_ES_SysLogWrite_Unsync("CFE_ES_ReloadApp: Reload Application %s Initiated. New filename = %s\n", 
+                                   CFE_ES_Global.AppTable[AppID].StartParams.Name, AppFileName);
+              strncpy((char *)CFE_ES_Global.AppTable[AppID].StartParams.FileName, AppFileName, OS_MAX_PATH_LEN);
+              CFE_ES_Global.AppTable[AppID].ControlReq.AppControlRequest = CFE_ES_RunStatus_SYS_RELOAD;
+              CFE_ES_SetAppState(AppID, CFE_ES_AppState_WAITING);
+              CFE_ES_Global.AppTable[AppID].ControlReq.AppTimer = CFE_PLATFORM_ES_APP_KILL_TIMEOUT;
+          }
+          else
+          {
+              CFE_ES_SysLogWrite_Unsync ("CFE_ES_ReloadApp: Cannot Reload Application %s, File %s does not exist.\n",
+                                     CFE_ES_Global.AppTable[AppID].StartParams.Name,
+                                     AppFileName);
+              ReturnCode = CFE_ES_FILE_IO_ERR;
+          }
        }
+    
+       CFE_ES_UnlockSharedData(__func__,__LINE__);
+    }
+    else
+    {
+       ReturnCode = CFE_ES_ERR_APPID;
+       CFE_ES_WriteToSysLog("CFE_ES_ReloadApp: Invalid Application ID received, RC = 0x%08X\n",
+                            (unsigned int) ReturnCode);
     }
     
-    CFE_ES_UnlockSharedData(__func__,__LINE__);
-        
     return(ReturnCode);
 
 } /* End of CFE_ES_ReloadApp() */
@@ -334,33 +344,43 @@ int32 CFE_ES_DeleteApp(uint32 AppID)
 {
     int32 ReturnCode = CFE_SUCCESS;
 
-    CFE_ES_LockSharedData(__func__,__LINE__);
+    if ( AppID < CFE_PLATFORM_ES_MAX_APPLICATIONS )
+    {
+       CFE_ES_LockSharedData(__func__,__LINE__);
     
-    /*
-    ** Check to see if the App is an external cFE App.
-    */
-    if ( CFE_ES_Global.AppTable[AppID].Type == CFE_ES_AppType_CORE )
-    {
-       CFE_ES_SysLogWrite_Unsync ("CFE_ES_DeleteApp: Cannot Delete a CORE Application: %s.\n", 
-       CFE_ES_Global.AppTable[AppID].StartParams.Name );
-       ReturnCode = CFE_ES_ERR_APPID; 
-    }
-    else if ( CFE_ES_Global.AppTable[AppID].AppState != CFE_ES_AppState_RUNNING )
-    {
-       CFE_ES_SysLogWrite_Unsync ("CFE_ES_DeleteApp: Cannot Delete Application %s, It is not running.\n",
-                              CFE_ES_Global.AppTable[AppID].StartParams.Name);
-       ReturnCode = CFE_ES_ERR_APPID; 
-    }
-    else
-    {
-       CFE_ES_SysLogWrite_Unsync("CFE_ES_DeleteApp: Delete Application %s Initiated\n",
-                             CFE_ES_Global.AppTable[AppID].StartParams.Name);    
-       CFE_ES_Global.AppTable[AppID].ControlReq.AppControlRequest = CFE_ES_RunStatus_SYS_DELETE;
-       CFE_ES_SetAppState(AppID, CFE_ES_AppState_WAITING);
-       CFE_ES_Global.AppTable[AppID].ControlReq.AppTimer = CFE_PLATFORM_ES_APP_KILL_TIMEOUT;
-    }
+       /*
+       ** Check to see if the App is an external cFE App.
+       */
+       if ( CFE_ES_Global.AppTable[AppID].Type == CFE_ES_AppType_CORE )
+       {
+          CFE_ES_SysLogWrite_Unsync ("CFE_ES_DeleteApp: Cannot Delete a CORE Application: %s.\n", 
+                                      CFE_ES_Global.AppTable[AppID].StartParams.Name );
+          ReturnCode = CFE_ES_ERR_APPID; 
+       }
+       else if ( CFE_ES_Global.AppTable[AppID].AppState != CFE_ES_AppState_RUNNING )
+       {
+          CFE_ES_SysLogWrite_Unsync ("CFE_ES_DeleteApp: Cannot Delete Application %s, It is not running.\n",
+          CFE_ES_Global.AppTable[AppID].StartParams.Name);
+          ReturnCode = CFE_ES_ERR_APPID; 
+       }
+       else
+       {
+          CFE_ES_SysLogWrite_Unsync("CFE_ES_DeleteApp: Delete Application %s Initiated\n",
+                                     CFE_ES_Global.AppTable[AppID].StartParams.Name);    
+          CFE_ES_Global.AppTable[AppID].ControlReq.AppControlRequest = CFE_ES_RunStatus_SYS_DELETE;
+          CFE_ES_SetAppState(AppID, CFE_ES_AppState_WAITING);
+          CFE_ES_Global.AppTable[AppID].ControlReq.AppTimer = CFE_PLATFORM_ES_APP_KILL_TIMEOUT;
+       }
     
-    CFE_ES_UnlockSharedData(__func__,__LINE__);
+       CFE_ES_UnlockSharedData(__func__,__LINE__);
+    }
+    else /* App ID is not valid */
+    {
+       ReturnCode = CFE_ES_ERR_APPID;
+
+       CFE_ES_WriteToSysLog("CFE_ES_DeleteApp: Invalid Application ID received, RC = 0x%08X\n",
+                            (unsigned int) ReturnCode);
+    } /* end if AppID < CFE_PLATFORM_ES_MAX_APPLICATIONS */
         
     return(ReturnCode);
 
@@ -709,7 +729,7 @@ int32 CFE_ES_WaitForSystemState(uint32 MinSystemState, uint32 TimeOutMillisecond
 void CFE_ES_WaitForStartupSync(uint32 TimeOutMilliseconds)
 {
     CFE_ES_WaitForSystemState(CFE_ES_SystemState_OPERATIONAL, TimeOutMilliseconds);
-}
+} /* End of CFE_ES_WaitForStartupSync() */
 
 /*
 ** Function: CFE_ES_RegisterApp
@@ -822,7 +842,7 @@ int32 CFE_ES_GetAppID(uint32 *AppIdPtr)
 int32 CFE_ES_GetAppName(char *AppName, uint32 AppId, uint32 BufferLength)
 {
    int32 Result;
-
+   
    CFE_ES_LockSharedData(__func__,__LINE__);
 
    if ( AppId < CFE_PLATFORM_ES_MAX_APPLICATIONS )
@@ -973,7 +993,7 @@ int32 CFE_ES_GetTaskInfo(CFE_ES_TaskInfo_t *TaskInfo, uint32 OSTaskId)
 
    return(ReturnCode);
 
-} /* End of CFE_ES_GetAppName() */
+} /* End of CFE_ES_GetTaskInfo() */
 
 
 /*
@@ -1159,7 +1179,7 @@ void CFE_ES_IncrementTaskCounter(void)
       CFE_ES_Global.TaskTable[TaskId].ExecutionCounter++;
    }
    
-} /* End of CFE_ES_ExitChildTask() */
+} /* End of CFE_ES_IncrementTaskCounter() */
 
 
 
@@ -1270,7 +1290,7 @@ int32 CFE_ES_DeleteChildTask(uint32 OSTaskId)
     }
     return(ReturnCode);
 
-} /* End of CFE_ES_DeleteTask() */
+} /* End of CFE_ES_DeleteChildTask() */
 
 /*
 ** Function: CFE_ES_ExitChildTask
@@ -1513,6 +1533,12 @@ int32 CFE_ES_RegisterCDS(CFE_ES_CDSHandle_t *CDSHandlePtr, int32 BlockSize, cons
               Status = CFE_ES_CDS_INVALID_SIZE;
               CFE_ES_WriteToSysLog("CFE_CDS:Register-CDS %s has size of zero\n", Name);
            }
+           else if (BlockSize > CFE_PLATFORM_ES_MAX_BLOCK_SIZE)
+           {
+              Status = CFE_ES_CDS_INVALID_SIZE;
+              CFE_ES_WriteToSysLog("CFE_CDS:Register-CDS %s has size greater than CFE_PLATFORM_ES_MAX_BLOCK_SIZE (%u)\n",
+                                    Name,CFE_PLATFORM_ES_MAX_BLOCK_SIZE);
+           }               
            else
            {
               /* Create CDS and designate it as NOT being a Critical Table */
@@ -1569,7 +1595,12 @@ int32 CFE_ES_RestoreFromCDS(void *RestoreToMemory, CFE_ES_CDSHandle_t Handle)
 
 /* end of file */
 
-
+/*
+** Function: CFE_ES_RegisterGenCounter
+**
+** Purpose:  This routine registers a generic counter.
+**
+*/
 int32 CFE_ES_RegisterGenCounter(uint32 *CounterIdPtr, const char *CounterName)
 {
    int32 ReturnCode = CFE_ES_BAD_ARGUMENT;
@@ -1601,7 +1632,7 @@ int32 CFE_ES_RegisterGenCounter(uint32 *CounterIdPtr, const char *CounterName)
 
    return ReturnCode;
 
-}
+} /* End of CFE_ES_RegisterGenCounter() */
 
 /*
 ** Function: CFE_ES_DeleteGenCounter

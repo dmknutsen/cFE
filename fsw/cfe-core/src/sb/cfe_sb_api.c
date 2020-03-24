@@ -407,7 +407,6 @@ int32 CFE_SB_DeletePipeFull(CFE_SB_PipeId_t PipeId,uint32 AppId)
      * Note: If this fails (e.g. bad AppID, it returns an empty string
      */
     CFE_ES_GetAppName(FullName, Owner, sizeof(FullName));
-
     CFE_EVS_SendEventWithAppID(CFE_SB_PIPE_DELETED_EID,CFE_EVS_EventType_DEBUG,CFE_SB.AppId,
           "Pipe Deleted:id %d,owner %s",(int)PipeId, FullName);
 
@@ -924,6 +923,18 @@ int32  CFE_SB_SubscribeFull(CFE_SB_MsgId_t   MsgId,
         return CFE_SB_BAD_ARGUMENT;
     }/* end if */
 
+    /* check message qaulity */
+    if(Quality.Priority > 1 || Quality.Reliability > 1)
+    {
+        CFE_SB.HKTlmMsg.Payload.SubscribeErrorCounter++;
+        CFE_SB_UnlockSharedData(__func__,__LINE__);
+        CFE_EVS_SendEventWithAppID(CFE_SB_SUB_ARG_ERR_EID,CFE_EVS_EventType_ERROR,CFE_SB.AppId,
+          "Subscribe Err:Bad Arg,Quality.Priority %u,Quality.Reliability %u,PipeId %d,app %s",
+          (unsigned int)Quality.Priority,(unsigned int)Quality.Reliability,(int)PipeId,
+          CFE_SB_GetAppTskName(TskId,FullName));
+        return CFE_SB_BAD_ARGUMENT;
+    }/* end if */
+
     /* Convert the API MsgId into the SB internal representation MsgKey */
     MsgKey = CFE_SB_ConvertMsgIdtoMsgKey(MsgId);
 
@@ -1123,7 +1134,7 @@ int32 CFE_SB_UnsubscribeLocal(CFE_SB_MsgId_t MsgId, CFE_SB_PipeId_t PipeId)
 
 
 /******************************************************************************
-** Name:    CFE_SB_UnsubscribeAppId
+** Name:    CFE_SB_UnsubscribeWithAppId
 **
 ** Purpose: CFE Internal API intented to be called by CFE_ES when an applications
 **          SB resources need to be freed. The regular unsibscribe api won't work

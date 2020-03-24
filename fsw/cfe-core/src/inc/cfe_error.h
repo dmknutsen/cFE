@@ -1280,11 +1280,18 @@
 */
 #define CFE_TBL_ERR_BAD_PROCESSOR_ID    ((int32)0xcc000029)
 
+
 /**
 **  Error code indicating that the TBL command was not processed
 **  successfully and that the error counter should be incremented.
 */
 #define CFE_TBL_MESSAGE_ERROR           ((int32)0xcc00002a)
+
+/**
+**  Bad parameter passed into an TBL API.
+**
+*/
+#define CFE_TBL_BAD_ARGUMENT  ((int32)0xcc00002b)
 
 
 /**
