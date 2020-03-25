@@ -128,11 +128,13 @@ int32 CFE_ES_WriteToERLog( uint32 EntryType,   uint32  ResetType, uint32 ResetSu
    */
    if ( Description  == NULL)
    {
-      strncpy(CFE_ES_ResetDataPtr->ERLog[LogIdx].Description, "No Description String Given.", 80);
+      strncpy(CFE_ES_ResetDataPtr->ERLog[LogIdx].Description, "No Description String Given.", 
+       sizeof (CFE_ES_ResetDataPtr->ERLog[LogIdx].Description));
    }
    else
    {
-      strncpy(CFE_ES_ResetDataPtr->ERLog[LogIdx].Description, Description, 80);
+      strncpy(CFE_ES_ResetDataPtr->ERLog[LogIdx].Description, Description,
+       sizeof (CFE_ES_ResetDataPtr->ERLog[LogIdx].Description));
    }
 
    /*

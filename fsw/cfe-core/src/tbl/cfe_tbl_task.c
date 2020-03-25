@@ -243,7 +243,7 @@ void CFE_TBL_InitData(void)
 
     /* Initialize Command Pipe Parameters */
     CFE_TBL_TaskData.PipeDepth = CFE_TBL_TASK_PIPE_DEPTH;
-    strncpy(CFE_TBL_TaskData.PipeName, CFE_TBL_TASK_PIPE_NAME, 16);
+    strncpy(CFE_TBL_TaskData.PipeName, CFE_TBL_TASK_PIPE_NAME, sizeof(CFE_TBL_TaskData.PipeName));
 
     /* Initialize Packet Headers */
     CFE_SB_InitMsg(&CFE_TBL_TaskData.HkPacket,
