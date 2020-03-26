@@ -84,11 +84,21 @@ int32 CFE_FS_ReadHeader(CFE_FS_Header_t *Hdr, int32 FileDes)
 /* CFE_FS_InitHeader() -- intialize cFE file header structure              */
 /*                                                                         */
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-void CFE_FS_InitHeader(CFE_FS_Header_t *Hdr, const char *Description, uint32 SubType)
+int32 CFE_FS_InitHeader(CFE_FS_Header_t *Hdr, const char *Description, uint32 SubType)
 {
+   int32 Result = CFE_SUCCESS;
    memset(Hdr, 0, sizeof(CFE_FS_Header_t));
+
+   if (strlen(Description) > sizeof(Hdr->Description) - 1)
+   {
+      CFE_ES_WriteToSysLog("CFE_FS_InitHeader: Description field truncated to %u characters - '%s' ", 
+                            (unsigned int)sizeof(Hdr->Description)-1), Description;
+      Result = CFE_FS_BAD_ARGUMENT;
+   }
    strncpy((char *)Hdr->Description, Description, sizeof(Hdr->Description) - 1);
    Hdr->SubType = SubType;
+
+   return Result;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
