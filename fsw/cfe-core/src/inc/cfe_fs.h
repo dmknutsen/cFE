@@ -123,7 +123,7 @@ int32 CFE_FS_ReadHeader(CFE_FS_Header_t *Hdr, int32 FileDes);
 ** \sa #CFE_FS_WriteHeader
 **
 ******************************************************************************/
-void CFE_FS_InitHeader(CFE_FS_Header_t *Hdr, const char *Description, uint32 SubType);
+int32 CFE_FS_InitHeader(CFE_FS_Header_t *Hdr, const char *Description, uint32 SubType);
 
 /*****************************************************************************/
 /**

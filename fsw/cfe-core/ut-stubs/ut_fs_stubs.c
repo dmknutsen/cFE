@@ -55,7 +55,7 @@
 **        None
 **
 ******************************************************************************/
-void CFE_FS_InitHeader(CFE_FS_Header_t *hdr, const char *Description, uint32 SubType)
+int32 CFE_FS_InitHeader(CFE_FS_Header_t *hdr, const char *Description, uint32 SubType)
 {
     memset(hdr,0,sizeof(CFE_FS_Header_t));
     UT_Stub_RegisterContext(UT_KEY(CFE_FS_InitHeader), hdr);
