@@ -551,9 +551,7 @@ int32 CFE_SB_DuplicateSubscribeCheck(CFE_SB_MsgKey_t MsgKey,
 */
 void CFE_SB_SetMsgSeqCnt(CFE_SB_MsgPtr_t MsgPtr,uint32 Count){
 
-#ifdef MESSAGE_FORMAT_IS_CCSDS
     CCSDS_WR_SEQ(MsgPtr->Hdr,Count);
-#endif
 
 }/* end CFE_SB_SetMsgSeqCnt */
 
@@ -675,7 +673,7 @@ char *CFE_SB_GetAppTskName(uint32 TaskId,char *FullName){
 uint8 CFE_SB_GetPktType(CFE_SB_MsgId_t MsgId)
 {
 
-#ifdef MESSAGE_FORMAT_IS_CCSDS
+
     CFE_SB_MsgId_Atom_t Val = MsgId;
 
 #ifndef MESSAGE_FORMAT_IS_CCSDS_VER_2
@@ -683,8 +681,6 @@ uint8 CFE_SB_GetPktType(CFE_SB_MsgId_t MsgId)
 #else
         return CFE_SB_RD_TYPE_FROM_MSGID(Val);
 #endif /* MESSAGE_FORMAT_IS_CCSDS_VER_2 */
-        
-#endif /* MESSAGE_FORMAT_IS_CCSDS */
 
 }/* end CFE_SB_GetPktType */
 

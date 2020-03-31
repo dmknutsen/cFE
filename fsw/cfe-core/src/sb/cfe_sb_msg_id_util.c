@@ -120,8 +120,6 @@ CFE_SB_MsgId_t CFE_SB_GetMsgId(const CFE_SB_Msg_t *MsgPtr)
 {
    CFE_SB_MsgId_t MsgId = 0;
 
-#ifdef MESSAGE_FORMAT_IS_CCSDS
-
 #ifndef MESSAGE_FORMAT_IS_CCSDS_VER_2  
     MsgId = CCSDS_RD_SID(MsgPtr->Hdr);
 #else
@@ -145,7 +143,6 @@ CFE_SB_MsgId_t CFE_SB_GetMsgId(const CFE_SB_Msg_t *MsgPtr)
 /*      SystemId = CCSDS_RD_SYSTEM_ID(HdrPtr->ApidQ);            */
 /*      MsgId = (MsgId | (SystemId << 16)); */
 
-#endif
 #endif
 
 return MsgId;
