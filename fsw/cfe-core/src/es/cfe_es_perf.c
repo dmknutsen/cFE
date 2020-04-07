@@ -417,12 +417,13 @@ void CFE_ES_PerfLogAdd(uint32 Marker, uint32 EntryExit)
     int32         IntFlags;
 
     if (Perf->MetaData.State != CFE_ES_PERF_IDLE) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 1\n");
         /* if marker is out of range... */
         if(Marker >= CFE_MISSION_ES_PERF_MAX_IDS){
-
+printf ("\nCFE_ES_PerfLogAdd - path 2\n");
           /* if marker has not been reported previously ... */
           if(Perf->MetaData.InvalidMarkerReported == false){
+printf ("\nCFE_ES_PerfLogAdd - path 3\n");
             CFE_ES_WriteToSysLog("ES PERF:Invalid performance marker %d,max is %d\n",
                     (unsigned int)Marker,(CFE_MISSION_ES_PERF_MAX_IDS - 1));
             Perf->MetaData.InvalidMarkerReported = true;
@@ -435,7 +436,7 @@ void CFE_ES_PerfLogAdd(uint32 Marker, uint32 EntryExit)
 
         /* is this id filtered */
         if (CFE_ES_TEST_LONG_MASK(Perf->MetaData.FilterMask, Marker)) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 4\n");
            /* disable interrupts to guarentee exclusive access to the data structures */
             IntFlags = OS_IntLock();
 
@@ -445,12 +446,13 @@ void CFE_ES_PerfLogAdd(uint32 Marker, uint32 EntryExit)
             Perf->MetaData.DataEnd++;
             if (Perf->MetaData.DataEnd >= CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE) {
                 Perf->MetaData.DataEnd = 0;
+printf ("\nCFE_ES_PerfLogAdd - path 5\n");
             }
 
             /* we have filled up the buffer */
             Perf->MetaData.DataCount++;
             if (Perf->MetaData.DataCount > CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 6\n");
                 Perf->MetaData.DataCount = CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE;
 
                 /* after the buffer fills up start and end point to the same entry since we
@@ -460,28 +462,32 @@ void CFE_ES_PerfLogAdd(uint32 Marker, uint32 EntryExit)
 
             /* waiting for trigger */
             if (Perf->MetaData.State == CFE_ES_PERF_WAITING_FOR_TRIGGER) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 7\n");
                 if (CFE_ES_TEST_LONG_MASK(Perf->MetaData.TriggerMask, Marker)) {
+printf ("\nCFE_ES_PerfLogAdd - path 8\n");
                     Perf->MetaData.State = CFE_ES_PERF_TRIGGERED;
                 }
             }
             /* triggered */
             if (Perf->MetaData.State == CFE_ES_PERF_TRIGGERED) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 9\n");
                 Perf->MetaData.TriggerCount++;
                 if (Perf->MetaData.Mode == CFE_ES_PERF_TRIGGER_START) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 10\n");
                     if (Perf->MetaData.TriggerCount >= CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE) {
+printf ("\nCFE_ES_PerfLogAdd - path 11\n");
                         Perf->MetaData.State = CFE_ES_PERF_IDLE;
                     }
                 }
                 else if (Perf->MetaData.Mode == CFE_ES_PERF_TRIGGER_CENTER) {
-
+printf ("\nCFE_ES_PerfLogAdd - path 12\n");
                     if (Perf->MetaData.TriggerCount >= CFE_PLATFORM_ES_PERF_DATA_BUFFER_SIZE / 2) {
+printf ("\nCFE_ES_PerfLogAdd - path 13\n");
                         Perf->MetaData.State = CFE_ES_PERF_IDLE;
                     }
                 }
                 else if (Perf->MetaData.Mode == CFE_ES_PERF_TRIGGER_END) {
+printf ("\nCFE_ES_PerfLogAdd - path 14\n");
 
                     Perf->MetaData.State = CFE_ES_PERF_IDLE;
                 }

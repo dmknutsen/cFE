@@ -112,6 +112,8 @@ void CFE_ES_Main(uint32 StartType, uint32 StartSubtype, uint32 ModeId, const cha
    ReturnCode = OS_MutSemCreate(&(CFE_ES_Global.SharedDataMutex), "ES_DATA_MUTEX", 0 );
    if(ReturnCode != OS_SUCCESS)
    {
+printf ("\n CFE_ES_Main - path 1");
+
       CFE_ES_SysLogWrite_Unsync("ES Startup: Error: ES Shared Data Mutex could not be created. RC=0x%08X\n",
               (unsigned int)ReturnCode);
 
@@ -207,6 +209,7 @@ void CFE_ES_Main(uint32 StartType, uint32 StartSubtype, uint32 ModeId, const cha
    if (CFE_ES_MainTaskSyncDelay(CFE_ES_AppState_LATE_INIT,
            CFE_PLATFORM_ES_STARTUP_SCRIPT_TIMEOUT_MSEC) != CFE_SUCCESS)
    {
+printf ("\n CFE_ES_Main - path 2");
        CFE_ES_WriteToSysLog("ES Startup: Startup Sync failed - Applications may not have all initialized\n");
    }
 
@@ -223,6 +226,7 @@ void CFE_ES_Main(uint32 StartType, uint32 StartSubtype, uint32 ModeId, const cha
    if (CFE_ES_MainTaskSyncDelay(CFE_ES_AppState_RUNNING,
            CFE_PLATFORM_ES_STARTUP_SCRIPT_TIMEOUT_MSEC) != CFE_SUCCESS)
    {
+printf ("\n CFE_ES_Main - path 3");
        CFE_ES_WriteToSysLog("ES Startup: Startup Sync failed - Applications may not have all started\n");
    }
 
