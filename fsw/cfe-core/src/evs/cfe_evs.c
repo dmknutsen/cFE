@@ -64,23 +64,28 @@ int32 CFE_EVS_Register (void *Filters, uint16 NumEventFilters, uint16 FilterSche
 
    if (Status == CFE_SUCCESS)
    {
+printf ("\n CFE_EVS_Register - path 1  \n");
       /* Cleanup if already registered */
       if (CFE_EVS_GlobalData.AppData[AppID].RegisterFlag == true)
       {
+printf ("\n CFE_EVS_Register - path 2  \n");
          memset(&CFE_EVS_GlobalData.AppData[AppID], 0, sizeof(EVS_AppData_t));
       }
 
       /* Verify filter arguments */
       if (FilterScheme != CFE_EVS_EventFilter_BINARY)
       {
+printf ("\n CFE_EVS_Register - path 3  \n");
          Status = CFE_EVS_UNKNOWN_FILTER;
       }
       else if ((NumEventFilters != 0) && (Filters == NULL))
       {
+printf ("\n CFE_EVS_Register - path 4  \n");
          Status = CFE_ES_ERR_BUFFER;
       }
       else
       {
+printf ("\n CFE_EVS_Register - path 5  \n");
          /* Initialize application event data */
          AppDataPtr = &CFE_EVS_GlobalData.AppData[AppID];
          AppDataPtr->RegisterFlag = true;
@@ -91,20 +96,24 @@ int32 CFE_EVS_Register (void *Filters, uint16 NumEventFilters, uint16 FilterSche
          /* Set limit for number of provided filters */
          if (NumEventFilters < CFE_PLATFORM_EVS_MAX_EVENT_FILTERS)
          {
+printf ("\n CFE_EVS_Register - path 6  \n");
             FilterLimit = NumEventFilters;
          }
          else
          {
+printf ("\n CFE_EVS_Register - path 7  \n");
             FilterLimit = CFE_PLATFORM_EVS_MAX_EVENT_FILTERS;
          }
 
          if (Filters != NULL)
          {
+printf ("\n CFE_EVS_Register - path 8  \n");
             AppFilters = (CFE_EVS_BinFilter_t *) Filters;
 
             /* Copy provided filters */
             for (i = 0; i < FilterLimit; i++)
             {
+/*printf ("\n CFE_EVS_Register - path 9  \n");*/
                AppDataPtr->BinFilters[i].EventID = AppFilters[i].EventID;
                AppDataPtr->BinFilters[i].Mask    = AppFilters[i].Mask;
                AppDataPtr->BinFilters[i].Count   = 0;
@@ -114,13 +123,14 @@ int32 CFE_EVS_Register (void *Filters, uint16 NumEventFilters, uint16 FilterSche
          /* Initialize remainder of filters as unused */
          for (i = FilterLimit; i < CFE_PLATFORM_EVS_MAX_EVENT_FILTERS; i++)
          {
+/*printf ("\n CFE_EVS_Register - path 10  \n");*/
             AppDataPtr->BinFilters[i].EventID = CFE_EVS_FREE_SLOT;
             AppDataPtr->BinFilters[i].Mask    = 0;
             AppDataPtr->BinFilters[i].Count   = 0;
          }
       }
    }
-
+printf ("\n CFE_EVS_Register - path 11  \n");
    return(Status);
 
 } /* End CFE_EVS_Register */
@@ -141,6 +151,7 @@ int32 CFE_EVS_Unregister(void)
       /* Cleanup if already registered */
       if (CFE_EVS_GlobalData.AppData[AppID].RegisterFlag == true)
       {
+printf ("\nCFE_EVS_Unregister - path 1\n");
          memset(&CFE_EVS_GlobalData.AppData[AppID], 0, sizeof(EVS_AppData_t));
       }
    }

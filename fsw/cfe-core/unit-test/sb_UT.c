@@ -62,6 +62,7 @@ void UtTest_Setup(void)
     UT_ADD_TEST(Test_Subscribe_API);
     UT_ADD_TEST(Test_Unsubscribe_API);
     UT_ADD_TEST(Test_SendMsg_API);
+UT_ADD_TEST(Test_RcvMsg_GetLastSenderSuccess);
     UtTest_Add(Test_RcvMsg_API, NULL, Test_CleanupApp_API, "Test_RcvMsg_API");
     UT_ADD_TEST(Test_SB_Utils);
     UtTest_Add(Test_SB_SpecialCases, NULL, UT_CheckForOpenSockets,
@@ -7882,6 +7883,7 @@ void Test_RcvMsg_GetLastSenderInvalidCaller(void)
 void Test_RcvMsg_GetLastSenderSuccess(void)
 {
     CFE_SB_PipeId_t   PipeId;
+    CFE_SB_MsgPtr_t PtrToMsg;
     CFE_SB_SenderId_t *GLSPtr;
     uint32            PipeDepth = 10;
     int32             ExpRtn;
@@ -7893,8 +7895,14 @@ void Test_RcvMsg_GetLastSenderSuccess(void)
 #endif
 
     SB_ResetUnitTest();
-    CFE_SB_CreatePipe(&PipeId, PipeDepth, "RcvMsgTestPipe");
+    CFE_SB_CreatePipe(&PipeId, PipeDepth, "RcvMsgTestPipe1");
+    CFE_SB_CreatePipe(&PipeId, PipeDepth, "RcvMsgTestPipe2");
+CFE_SB_RcvMsg(&PtrToMsg, PipeId, CFE_SB_PEND_FOREVER);
     ActRtn = CFE_SB_GetLastSenderId(&GLSPtr, PipeId);
+
+printf ("\n&GLSPtr: %x\n",&GLSPtr);
+printf ("\nGLSPtr: %x\n",GLSPtr);
+
     ExpRtn = CFE_SUCCESS;
 
     if (ActRtn != ExpRtn)

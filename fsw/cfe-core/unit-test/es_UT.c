@@ -4738,13 +4738,14 @@ void TestAPI(void)
     CFE_ES_Global.AppTable[Id].TaskInfo.MainTaskId = TestObjId;
     CFE_ES_Global.AppTable[Id].AppState = CFE_ES_AppState_RUNNING;
     CFE_ES_Global.TaskTable[Id].AppId = Id;
+printf ("\nAppName: %s  %u ", (uint32*) AppName, (uint32*) AppName);
     Return = CFE_ES_CreateChildTask(&TaskId,
                                     "TaskName",
                                     TestAPI,
-                                    (uint32*) AppName,
+                                    &AppName,
                                     32,
                                     400,
-                                    0);
+                                    25);
     UT_Report(__FILE__, __LINE__,
               Return == CFE_SUCCESS, "CFE_ES_CreateChildTask",
               "Create child task successful");
@@ -6410,6 +6411,19 @@ void TestESMempool(void)
                                      HandlePtr2) == CFE_ES_ERR_MEM_HANDLE,
               "CFE_ES_GetMemPoolStats",
               "Invalid handle; not pool start address");
+/*printf ("\n PoolPtr UT.c: %x   PoolPtr->Size: %u      PoolPtr->RequestCntr:%u  ", HandlePtr2,((Pool_t *) HandlePtr2)->Size,((Pool_t *) HandlePtr2)->RequestCntr);*/
+printf ("\n PoolPtr UT.c: %x   PoolPtr->Size: %u      PoolPtr->RequestCntr:%u  CurrentAddr:%x", HandlePtr, ((Pool_t *) HandlePtr)->Size, ((Pool_t *) HandlePtr)->RequestCntr,((Pool_t *) HandlePtr)->CurrentAddr);
+    /* Test getting memory pool statistics successful
+     */
+    ES_ResetUnitTest();
+    UT_Report(__FILE__, __LINE__,
+              CFE_ES_GetMemPoolStats(&Stats,
+                                     HandlePtr) == CFE_SUCCESS,
+              "CFE_ES_GetMemPoolStats",
+              "Test getting memory pool statistics successful");
+
+
+
 
     /* Test allocating a pool buffer where the memory block doesn't fit within
      * the remaining memory

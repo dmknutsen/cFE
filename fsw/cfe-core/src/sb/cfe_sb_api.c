@@ -89,6 +89,8 @@ int32  CFE_SB_CreatePipe(CFE_SB_PipeId_t *PipeIdPtr, uint16  Depth, const char *
     char            AppName[OS_MAX_API_NAME] = {'\0'};
     char            FullName[(OS_MAX_API_NAME * 2)];
 
+printf("\nPipeName: %s\n",PipeName);
+
     /* get callers AppId */
     CFE_ES_GetAppID(&AppId);
 
@@ -1614,6 +1616,8 @@ uint32  CFE_SB_GetLastSenderId(CFE_SB_SenderId_t **Ptr,CFE_SB_PipeId_t  PipeId)
     uint32            AppId = 0xFFFFFFFF;
     char              FullName[(OS_MAX_API_NAME * 2)];
 
+printf("\nPipeId: %u\n");
+
     TskId = OS_TaskGetId();
 
     /* validate ptr  - note: must validate ptr before pipe id validation  */
@@ -1648,11 +1652,22 @@ uint32  CFE_SB_GetLastSenderId(CFE_SB_SenderId_t **Ptr,CFE_SB_PipeId_t  PipeId)
       return CFE_SB_BAD_ARGUMENT;
     }/* end if */
 
+printf("\nCFE_SB.PipeTbl[PipeId].CurrentBuff: %s  %u\n",CFE_SB.PipeTbl[PipeId].CurrentBuff,CFE_SB.PipeTbl[PipeId].CurrentBuff);
+
     /* Get ptr to buffer descriptor for the last msg received on the given pipe */
     Ptr2BufDescriptor = CFE_SB.PipeTbl[PipeId].CurrentBuff;
 
+printf("\nPtr2BufDescriptor: %x   %u\n",Ptr2BufDescriptor,Ptr2BufDescriptor);
+printf("\n&Ptr2BufDescriptor: %x   %u\n",&Ptr2BufDescriptor,&Ptr2BufDescriptor);
+
     /* Set the receivers pointer to the adr of 'Sender' struct in buf descriptor */
     *Ptr = (CFE_SB_SenderId_t *) &Ptr2BufDescriptor -> Sender;
+
+printf("\n*Ptr: %x   %u\n",*Ptr, *Ptr);
+
+
+printf("\nPtr: %x   %u\n",Ptr,Ptr);
+
 
     CFE_SB_UnlockSharedData(__func__,__LINE__);
 

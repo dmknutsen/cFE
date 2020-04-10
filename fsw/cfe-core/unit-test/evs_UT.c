@@ -730,6 +730,8 @@ void Test_FilterRegistration(void)
         filter[i].Mask = 1;
     }
 
+printf (" \n\n\n\n\n sizeof(uintptr_t): %u \n\n\n\n\n\n", sizeof(uintptr_t));
+
     UT_Report(__FILE__, __LINE__,
               CFE_EVS_Register(filter, CFE_PLATFORM_EVS_MAX_EVENT_FILTERS + 1,
               CFE_EVS_EventFilter_BINARY) == CFE_SUCCESS,
